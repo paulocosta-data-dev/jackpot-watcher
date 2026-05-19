@@ -66,7 +66,7 @@ class GitHubGistStateManager:
 
     def update_state(
         self,
-        draw_id: int
+        draw_id
     ):
 
         payload = {

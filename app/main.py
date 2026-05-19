@@ -1,7 +1,7 @@
 from app.config import Config
 from app.notifiers.email import EmailNotifier
-from app.providers.euromillions import (
-    EuroMillionsProvider
+from app.providers.lottoster import (
+    LottoStarProvider
 )
 from app.rules.threshold_rule import ThresholdRule
 from app.state.github_gist import (
@@ -11,14 +11,13 @@ from app.state.github_gist import (
 
 def main():
 
-    provider = EuroMillionsProvider()
+    provider = LottoStarProvider()
 
     jackpot = provider.fetch()
 
-    print("\n=== JACKPOT DATA ===\n")
+    print("\n=== NEXT JACKPOT ESTIMATE ===\n")
     print(f"Amount: €{jackpot.amount:,}")
-    print(f"Draw ID: {jackpot.draw_id}")
-    print(f"Draw Date: {jackpot.draw_date}")
+    print(f"Source: {jackpot.source}")
 
     rule = ThresholdRule(
         threshold=Config.JACKPOT_THRESHOLD
@@ -44,15 +43,19 @@ def main():
         "last_alerted_draw_id"
     )
 
+    current_draw_id = (
+        f"{jackpot.amount}"
+    )
+
+    already_alerted = (
+        str(last_alerted_draw_id) ==
+        str(current_draw_id)
+    )
+
     print("\n=== STATE ===\n")
     print(
         f"Last alerted draw id: "
         f"{last_alerted_draw_id}"
-    )
-
-    already_alerted = (
-        last_alerted_draw_id ==
-        jackpot.draw_id
     )
 
     print(
@@ -81,7 +84,7 @@ def main():
         )
 
         state_manager.update_state(
-            jackpot.draw_id
+            current_draw_id
         )
 
         print(
