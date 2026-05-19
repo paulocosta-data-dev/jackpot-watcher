@@ -52,24 +52,34 @@ def main():
 
     state = state_manager.get_state()
 
-    last_alerted_draw_id = state.get(
-        "last_alerted_draw_id"
+    last_alerted_jackpot = state.get(
+        "last_alerted_jackpot"
     )
 
-    current_draw_id = (
-        f"{jackpot.amount}"
+    current_jackpot = (
+        jackpot.amount
     )
 
     already_alerted = (
-        str(last_alerted_draw_id) ==
-        str(current_draw_id)
+        str(last_alerted_jackpot) ==
+        str(current_jackpot)
     )
 
     print("\n=== STATE ===\n")
 
     print(
-        f"Last alerted draw id: "
-        f"{last_alerted_draw_id}"
+        f"Last alerted jackpot: "
+        f"{last_alerted_jackpot}"
+    )
+
+    print(
+        f"Last seen jackpot: "
+        f"{state.get('last_seen_jackpot')}"
+    )
+
+    print(
+        f"Last check at: "
+        f"{state.get('last_check_at')}"
     )
 
     print(
@@ -126,7 +136,9 @@ def main():
         )
 
         state_manager.update_state(
-            current_draw_id
+            jackpot_amount=jackpot.amount,
+            alert_type=alert_type,
+            source=jackpot.source
         )
 
         print(
@@ -134,6 +146,15 @@ def main():
         )
 
     else:
+
+        state_manager.save_check_state(
+            jackpot_amount=jackpot.amount,
+            source=jackpot.source
+        )
+
+        print(
+            "\n=== CHECK STATE SAVED ===\n"
+        )
 
         print(
             "\n=== NO ALERT NEEDED ===\n"
