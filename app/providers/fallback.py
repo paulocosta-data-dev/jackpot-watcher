@@ -1,9 +1,12 @@
+from app.logger import setup_logger
 from app.providers.euromillions import (
     EuroMillionsProvider
 )
 from app.providers.lottoster import (
     LottoStarProvider
 )
+
+logger = setup_logger()
 
 
 class FallbackJackpotProvider:
@@ -12,8 +15,8 @@ class FallbackJackpotProvider:
 
         try:
 
-            print(
-                "\nUsing LottoStar provider..."
+            logger.info(
+                "Using LottoStar provider."
             )
 
             provider = LottoStarProvider()
@@ -22,15 +25,16 @@ class FallbackJackpotProvider:
 
         except Exception as error:
 
-            print(
-                "\nLottoStar failed:"
+            logger.warning(
+                "LottoStar provider failed."
             )
 
-            print(error)
+            logger.warning(
+                str(error)
+            )
 
-            print(
-                "\nFalling back to "
-                "historical API..."
+            logger.warning(
+                "Using fallback provider."
             )
 
             provider = (

@@ -1,4 +1,5 @@
 from app.config import Config
+from app.logger import setup_logger
 from app.notifiers.email import EmailNotifier
 from app.providers.fallback import (
     FallbackJackpotProvider
@@ -7,6 +8,8 @@ from app.rules.threshold_rule import ThresholdRule
 from app.state.github_gist import (
     GitHubGistStateManager
 )
+
+logger = setup_logger()
 
 
 def main():
@@ -17,9 +20,15 @@ def main():
 
     jackpot = provider.fetch()
 
-    print("\n=== NEXT JACKPOT ESTIMATE ===\n")
-    print(f"Amount: €{jackpot.amount:,}")
-    print(f"Source: {jackpot.source}")
+    logger.info(
+        f"Jackpot amount: "
+        f"€{jackpot.amount:,}"
+    )
+
+    logger.info(
+        f"Provider source: "
+        f"{jackpot.source}"
+    )
 
     rule = ThresholdRule(
         threshold=Config.JACKPOT_THRESHOLD
@@ -34,14 +43,12 @@ def main():
         "fallback-estimation"
     )
 
-    print("\n=== RULE RESULT ===\n")
-
-    print(
+    logger.info(
         f"Threshold exceeded: "
         f"{threshold_exceeded}"
     )
 
-    print(
+    logger.info(
         f"Fallback mode: "
         f"{fallback_mode}"
     )
@@ -52,74 +59,92 @@ def main():
 
     state = state_manager.get_state()
 
-    last_alerted_jackpot = state.get(
-        "last_alerted_jackpot"
+    last_threshold_alert = state.get(
+        "last_threshold_alert"
     )
 
-    current_jackpot = (
-        jackpot.amount
+    last_fallback_alert = state.get(
+        "last_fallback_alert"
     )
 
-    already_alerted = (
-        str(last_alerted_jackpot) ==
-        str(current_jackpot)
+    logger.info(
+        f"Last threshold alert: "
+        f"{last_threshold_alert}"
     )
 
-    print("\n=== STATE ===\n")
-
-    print(
-        f"Last alerted jackpot: "
-        f"{last_alerted_jackpot}"
+    logger.info(
+        f"Last fallback alert: "
+        f"{last_fallback_alert}"
     )
 
-    print(
+    logger.info(
         f"Last seen jackpot: "
         f"{state.get('last_seen_jackpot')}"
     )
 
-    print(
+    logger.info(
         f"Last check at: "
         f"{state.get('last_check_at')}"
     )
 
-    print(
-        f"Already alerted: "
-        f"{already_alerted}"
+    threshold_already_alerted = (
+        str(last_threshold_alert) ==
+        str(jackpot.amount)
     )
 
-    should_alert = (
-        threshold_exceeded
-        or fallback_mode
+    fallback_already_alerted = (
+        fallback_mode
+        and last_fallback_alert
+        is not None
+    )
+
+    logger.info(
+        f"Threshold already alerted: "
+        f"{threshold_already_alerted}"
+    )
+
+    logger.info(
+        f"Fallback already alerted: "
+        f"{fallback_already_alerted}"
     )
 
     if threshold_exceeded:
+
+        should_alert = (
+            not threshold_already_alerted
+        )
 
         alert_type = "threshold"
 
     elif fallback_mode:
 
+        should_alert = (
+            not fallback_already_alerted
+        )
+
         alert_type = "fallback"
 
     else:
 
+        should_alert = False
+
         alert_type = None
 
-    print(
+    logger.info(
         f"Should alert: "
         f"{should_alert}"
     )
 
-    print(
+    logger.info(
         f"Alert type: "
         f"{alert_type}"
     )
 
-    if (
-        should_alert
-        and not already_alerted
-    ):
+    if should_alert:
 
-        print("\n=== SENDING EMAIL ===\n")
+        logger.warning(
+            "Sending jackpot alert email."
+        )
 
         notifier = EmailNotifier(
             smtp_host=Config.SMTP_HOST,
@@ -135,14 +160,14 @@ def main():
             alert_type=alert_type
         )
 
-        state_manager.update_state(
+        state_manager.update_alert_state(
             jackpot_amount=jackpot.amount,
             alert_type=alert_type,
             source=jackpot.source
         )
 
-        print(
-            "\n=== STATE UPDATED ===\n"
+        logger.info(
+            "Alert state updated."
         )
 
     else:
@@ -152,12 +177,12 @@ def main():
             source=jackpot.source
         )
 
-        print(
-            "\n=== CHECK STATE SAVED ===\n"
+        logger.info(
+            "Check state saved."
         )
 
-        print(
-            "\n=== NO ALERT NEEDED ===\n"
+        logger.info(
+            "No alert needed."
         )
 
 

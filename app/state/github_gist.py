@@ -70,12 +70,14 @@ class GitHubGistStateManager:
 
             return self._default_state()
 
-    def update_state(
+    def update_alert_state(
         self,
         jackpot_amount,
         alert_type,
         source
     ):
+
+        state = self.get_state()
 
         current_timestamp = (
             datetime.now(
@@ -83,27 +85,45 @@ class GitHubGistStateManager:
             ).isoformat()
         )
 
+        updated_state = {
+            "last_threshold_alert": (
+                state.get(
+                    "last_threshold_alert"
+                )
+            ),
+            "last_fallback_alert": (
+                state.get(
+                    "last_fallback_alert"
+                )
+            ),
+            "last_seen_jackpot": (
+                jackpot_amount
+            ),
+            "last_seen_source": (
+                source
+            ),
+            "last_check_at": (
+                current_timestamp
+            )
+        }
+
+        if alert_type == "threshold":
+
+            updated_state[
+                "last_threshold_alert"
+            ] = jackpot_amount
+
+        elif alert_type == "fallback":
+
+            updated_state[
+                "last_fallback_alert"
+            ] = current_timestamp
+
         payload = {
             "files": {
                 "jackpot-state.json": {
                     "content": json.dumps(
-                        {
-                            "last_alerted_jackpot": (
-                                jackpot_amount
-                            ),
-                            "last_alert_type": (
-                                alert_type
-                            ),
-                            "last_seen_jackpot": (
-                                jackpot_amount
-                            ),
-                            "last_seen_source": (
-                                source
-                            ),
-                            "last_check_at": (
-                                current_timestamp
-                            )
-                        },
+                        updated_state,
                         indent=2
                     )
                 }
@@ -133,31 +153,33 @@ class GitHubGistStateManager:
             ).isoformat()
         )
 
+        updated_state = {
+            "last_threshold_alert": (
+                state.get(
+                    "last_threshold_alert"
+                )
+            ),
+            "last_fallback_alert": (
+                state.get(
+                    "last_fallback_alert"
+                )
+            ),
+            "last_seen_jackpot": (
+                jackpot_amount
+            ),
+            "last_seen_source": (
+                source
+            ),
+            "last_check_at": (
+                current_timestamp
+            )
+        }
+
         payload = {
             "files": {
                 "jackpot-state.json": {
                     "content": json.dumps(
-                        {
-                            "last_alerted_jackpot": (
-                                state.get(
-                                    "last_alerted_jackpot"
-                                )
-                            ),
-                            "last_alert_type": (
-                                state.get(
-                                    "last_alert_type"
-                                )
-                            ),
-                            "last_seen_jackpot": (
-                                jackpot_amount
-                            ),
-                            "last_seen_source": (
-                                source
-                            ),
-                            "last_check_at": (
-                                current_timestamp
-                            )
-                        },
+                        updated_state,
                         indent=2
                     )
                 }
@@ -176,8 +198,8 @@ class GitHubGistStateManager:
     def _default_state(self):
 
         return {
-            "last_alerted_jackpot": None,
-            "last_alert_type": None,
+            "last_threshold_alert": None,
+            "last_fallback_alert": None,
             "last_seen_jackpot": None,
             "last_seen_source": None,
             "last_check_at": None
