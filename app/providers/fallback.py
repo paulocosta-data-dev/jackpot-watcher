@@ -1,4 +1,5 @@
 from app.logger import setup_logger
+from app.models.jackpot import JackpotData
 from app.providers.euromillions import (
     EuroMillionsProvider
 )
@@ -11,7 +12,7 @@ logger = setup_logger()
 
 class FallbackJackpotProvider:
 
-    def fetch(self):
+    def fetch(self) -> JackpotData:
 
         try:
 
@@ -19,9 +20,7 @@ class FallbackJackpotProvider:
                 "Using LottoStar provider."
             )
 
-            provider = LottoStarProvider()
-
-            return provider.fetch()
+            return LottoStarProvider().fetch()
 
         except Exception as error:
 
@@ -37,22 +36,17 @@ class FallbackJackpotProvider:
                 "Using fallback provider."
             )
 
-            provider = (
+            jackpot = (
                 EuroMillionsProvider()
-            )
-
-            jackpot = provider.fetch()
-
-            estimated_amount = int(
-                jackpot.amount + 15000000
-            )
-
-            jackpot.amount = (
-                estimated_amount
+                .fetch()
             )
 
             jackpot.source = (
                 "fallback-estimation"
+            )
+
+            jackpot.error_message = (
+                str(error)
             )
 
             return jackpot

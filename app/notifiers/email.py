@@ -101,6 +101,11 @@ class EmailNotifier:
                         Primary provider failed.
                     </p>
 
+                    <p>
+                        <strong>Error:</strong><br>
+                        {jackpot.error_message}
+                    </p>
+
                     <p style="
                         font-size: 32px;
                         font-weight: bold;
