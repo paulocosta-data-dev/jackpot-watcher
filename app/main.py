@@ -1,7 +1,7 @@
 from app.config import Config
 from app.notifiers.email import EmailNotifier
-from app.providers.lottoster import (
-    LottoStarProvider
+from app.providers.fallback import (
+    FallbackJackpotProvider
 )
 from app.rules.threshold_rule import ThresholdRule
 from app.state.github_gist import (
@@ -11,7 +11,9 @@ from app.state.github_gist import (
 
 def main():
 
-    provider = LottoStarProvider()
+    provider = (
+        FallbackJackpotProvider()
+    )
 
     jackpot = provider.fetch()
 
@@ -27,10 +29,21 @@ def main():
         jackpot
     )
 
+    fallback_mode = (
+        jackpot.source ==
+        "fallback-estimation"
+    )
+
     print("\n=== RULE RESULT ===\n")
+
     print(
         f"Threshold exceeded: "
         f"{threshold_exceeded}"
+    )
+
+    print(
+        f"Fallback mode: "
+        f"{fallback_mode}"
     )
 
     state_manager = (
@@ -53,6 +66,7 @@ def main():
     )
 
     print("\n=== STATE ===\n")
+
     print(
         f"Last alerted draw id: "
         f"{last_alerted_draw_id}"
@@ -63,8 +77,35 @@ def main():
         f"{already_alerted}"
     )
 
-    if (
+    should_alert = (
         threshold_exceeded
+        or fallback_mode
+    )
+
+    if threshold_exceeded:
+
+        alert_type = "threshold"
+
+    elif fallback_mode:
+
+        alert_type = "fallback"
+
+    else:
+
+        alert_type = None
+
+    print(
+        f"Should alert: "
+        f"{should_alert}"
+    )
+
+    print(
+        f"Alert type: "
+        f"{alert_type}"
+    )
+
+    if (
+        should_alert
         and not already_alerted
     ):
 
@@ -80,7 +121,8 @@ def main():
         )
 
         notifier.send_jackpot_alert(
-            jackpot
+            jackpot=jackpot,
+            alert_type=alert_type
         )
 
         state_manager.update_state(

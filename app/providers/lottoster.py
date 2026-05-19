@@ -16,6 +16,13 @@ class LottoStarProvider(JackpotProvider):
 
     def fetch(self) -> JackpotData:
 
+        # TEST ONLY
+        # Uncomment to force fallback mode
+
+        # raise Exception(
+        #    "Forced LottoStar failure for testing."
+        # )
+
         response = requests.get(
             self.URL,
             timeout=10,
