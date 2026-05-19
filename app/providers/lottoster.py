@@ -10,8 +10,8 @@ from app.providers.base import JackpotProvider
 class LottoStarProvider(JackpotProvider):
 
     URL = (
-        "https://www.lottostar.com/"
-        "euromillions/results"
+        "https://www.lottoster.com/"
+        "pt/euromillions-por/jackpot/"
     )
 
     def fetch(self) -> JackpotData:
@@ -33,32 +33,61 @@ class LottoStarProvider(JackpotProvider):
             "html.parser"
         )
 
-        page_text = soup.get_text(
-            separator=" ",
-            strip=True
-        )
+        lines = [
+            line.strip()
+            for line in soup.get_text(
+                separator="\n"
+            ).splitlines()
+            if line.strip()
+        ]
 
-        jackpot_match = re.search(
-            r"(\d{1,3}(?:\.\d{3})+)\€",
-            page_text
-        )
+        jackpot_amount = None
 
-        if not jackpot_match:
+        for index, line in enumerate(lines):
+
+            if line == "Euromillones":
+
+                next_lines = lines[
+                    index:index + 5
+                ]
+
+                for candidate in next_lines:
+
+                    match = re.search(
+                        r"(\d{1,3}(?:\.\d{3})+)\€",
+                        candidate
+                    )
+
+                    if match:
+
+                        jackpot_raw = (
+                            match.group(1)
+                        )
+
+                        jackpot_amount = int(
+                            jackpot_raw.replace(
+                                ".",
+                                ""
+                            )
+                        )
+
+                        break
+
+            if jackpot_amount:
+                break
+
+        if not jackpot_amount:
+
             raise ValueError(
-                "Could not find jackpot amount."
+                "Could not find "
+                "EuroMillions jackpot."
             )
-
-        jackpot_raw = jackpot_match.group(1)
-
-        jackpot_amount = int(
-            jackpot_raw.replace(".", "")
-        )
 
         return JackpotData(
             amount=jackpot_amount,
             currency="EUR",
             draw_date="next_draw",
-            draw_id=0,
+            draw_id=jackpot_amount,
             game="EuroMillions",
             source="lottoster-scraper"
         )
