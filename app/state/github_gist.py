@@ -8,14 +8,15 @@ from app.config import Config
 class GitHubGistStateManager:
 
     def __init__(self):
+
         if not Config.GIST_ID:
             raise ValueError(
-                "Missing GIST_ID environment variable."
+                "Missing GIST_ID."
             )
 
-        if not Config.GITHUB_TOKEN:
+        if not Config.GIST_TOKEN:
             raise ValueError(
-                "Missing GITHUB_TOKEN environment variable."
+                "Missing GIST_TOKEN."
             )
 
         self.base_url = (
@@ -25,12 +26,13 @@ class GitHubGistStateManager:
 
         self.headers = {
             "Authorization": (
-                f"token {Config.GITHUB_TOKEN}"
+                f"token {Config.GIST_TOKEN}"
             ),
             "Accept": "application/vnd.github+json"
         }
 
     def get_state(self) -> dict:
+
         response = requests.get(
             self.base_url,
             headers=self.headers,
@@ -41,20 +43,32 @@ class GitHubGistStateManager:
 
         gist_data = response.json()
 
-        files = gist_data.get("files", {})
+        files = gist_data.get(
+            "files",
+            {}
+        )
 
-        state_file = files.get("jackpot-state.json")
+        state_file = files.get(
+            "jackpot-state.json"
+        )
 
         if not state_file:
             return {
                 "last_alerted_draw_id": None
             }
 
-        content = state_file.get("content", "{}")
+        content = state_file.get(
+            "content",
+            "{}"
+        )
 
         return json.loads(content)
 
-    def update_state(self, draw_id: int):
+    def update_state(
+        self,
+        draw_id: int
+    ):
+
         payload = {
             "files": {
                 "jackpot-state.json": {
