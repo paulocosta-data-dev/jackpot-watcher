@@ -1,5 +1,3 @@
-from datetime import datetime, UTC
-
 from app.config import Config
 from app.logger import setup_logger
 from app.notifiers.email import EmailNotifier
@@ -15,6 +13,11 @@ logger = setup_logger()
 
 
 def main():
+
+    logger.info(
+        f"Run mode: "
+        f"{Config.RUN_MODE}"
+    )
 
     provider = (
         FallbackJackpotProvider()
@@ -32,27 +35,7 @@ def main():
         f"{jackpot.source}"
     )
 
-    current_weekday = (
-        datetime.now(
-            UTC
-        ).weekday()
-    )
-
-    logger.info(
-        f"Current weekday: "
-        f"{current_weekday}"
-    )
-
-    is_heartbeat_day = (
-        current_weekday == 6
-    )
-
-    logger.info(
-        f"Heartbeat day: "
-        f"{is_heartbeat_day}"
-    )
-
-    if is_heartbeat_day:
+    if Config.RUN_MODE == "heartbeat":
 
         logger.info(
             "Running heartbeat flow."
@@ -99,6 +82,16 @@ def main():
     fallback_mode = (
         jackpot.source ==
         "fallback-estimation"
+    )
+
+    logger.info(
+        f"Threshold exceeded: "
+        f"{threshold_exceeded}"
+    )
+
+    logger.info(
+        f"Fallback mode: "
+        f"{fallback_mode}"
     )
 
     state_manager = (

@@ -1,11 +1,16 @@
-name: Jackpot Watcher
+name: Jackpot Monitor
 
 on:
   workflow_dispatch:
+    inputs:
+      run_mode:
+        description: "Run mode"
+        required: true
+        default: "monitor"
 
 jobs:
 
-  run-jackpot-watcher:
+  run-monitor:
 
     runs-on: ubuntu-latest
 
@@ -14,20 +19,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build Docker image
-        run: |
-          docker build -t jackpot-watcher .
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
 
-      - name: Run jackpot watcher
-        run: |
-          docker run \
-            -e GIST_ID="${{ secrets.GIST_ID }}" \
-            -e GIST_TOKEN="${{ secrets.GIST_TOKEN }}" \
-            -e JACKPOT_THRESHOLD="${{ secrets.JACKPOT_THRESHOLD }}" \
-            -e SMTP_HOST="${{ secrets.SMTP_HOST }}" \
-            -e SMTP_PORT="${{ secrets.SMTP_PORT }}" \
-            -e SMTP_USERNAME="${{ secrets.SMTP_USERNAME }}" \
-            -e SMTP_PASSWORD="${{ secrets.SMTP_PASSWORD }}" \
-            -e EMAIL_FROM="${{ secrets.EMAIL_FROM }}" \
-            -e EMAIL_TO="${{ secrets.EMAIL_TO }}" \
-            jackpot-watcher
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run monitor
+        env:
+          RUN_MODE: ${{ github.event.inputs.run_mode }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          GIST_ID: ${{ secrets.GIST_ID }}
+          GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
+          JACKPOT_THRESHOLD: ${{ secrets.JACKPOT_THRESHOLD }}
+        run: python -m app.main

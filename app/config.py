@@ -48,3 +48,8 @@ class Config:
     EMAIL_TO = os.getenv(
         "EMAIL_TO"
     )
+    
+    RUN_MODE = os.getenv(
+    "RUN_MODE",
+    "monitor"
+    )
