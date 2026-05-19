@@ -1,3 +1,5 @@
+from datetime import datetime, UTC
+
 from app.config import Config
 from app.logger import setup_logger
 from app.notifiers.email import EmailNotifier
@@ -30,6 +32,62 @@ def main():
         f"{jackpot.source}"
     )
 
+    current_weekday = (
+        datetime.now(
+            UTC
+        ).weekday()
+    )
+
+    logger.info(
+        f"Current weekday: "
+        f"{current_weekday}"
+    )
+
+    is_heartbeat_day = (
+        current_weekday not in [1, 4]
+    )
+
+    logger.info(
+        f"Heartbeat day: "
+        f"{is_heartbeat_day}"
+    )
+
+    if is_heartbeat_day:
+
+        logger.info(
+            "Running heartbeat flow."
+        )
+
+        notifier = EmailNotifier(
+            smtp_host=Config.SMTP_HOST,
+            smtp_port=Config.SMTP_PORT,
+            smtp_username=Config.SMTP_USERNAME,
+            smtp_password=Config.SMTP_PASSWORD,
+            email_from=Config.EMAIL_FROM,
+            email_to=Config.EMAIL_TO
+        )
+
+        notifier.send_jackpot_alert(
+            jackpot=jackpot,
+            alert_type="heartbeat"
+        )
+
+        state_manager = (
+            GitHubGistStateManager()
+        )
+
+        state_manager.update_alert_state(
+            jackpot_amount=jackpot.amount,
+            alert_type="heartbeat",
+            source=jackpot.source
+        )
+
+        logger.info(
+            "Heartbeat sent."
+        )
+
+        return
+
     rule = ThresholdRule(
         threshold=Config.JACKPOT_THRESHOLD
     )
@@ -41,16 +99,6 @@ def main():
     fallback_mode = (
         jackpot.source ==
         "fallback-estimation"
-    )
-
-    logger.info(
-        f"Threshold exceeded: "
-        f"{threshold_exceeded}"
-    )
-
-    logger.info(
-        f"Fallback mode: "
-        f"{fallback_mode}"
     )
 
     state_manager = (
@@ -142,10 +190,6 @@ def main():
 
     if should_alert:
 
-        logger.warning(
-            "Sending jackpot alert email."
-        )
-
         notifier = EmailNotifier(
             smtp_host=Config.SMTP_HOST,
             smtp_port=Config.SMTP_PORT,
@@ -167,7 +211,7 @@ def main():
         )
 
         logger.info(
-            "Alert state updated."
+            "Alert sent."
         )
 
     else:
@@ -179,10 +223,6 @@ def main():
 
         logger.info(
             "Check state saved."
-        )
-
-        logger.info(
-            "No alert needed."
         )
 
 

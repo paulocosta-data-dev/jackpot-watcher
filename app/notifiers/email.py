@@ -43,48 +43,28 @@ class EmailNotifier:
             )
 
             plain_text = (
-                "EuroMillions jackpot alert\n\n"
-                f"Current estimate: "
-                f"{formatted_amount}\n\n"
-                "Threshold exceeded.\n\n"
-                f"Source: "
-                f"{jackpot.source}"
+                f"Current jackpot: "
+                f"{formatted_amount}"
             )
 
             html = f"""
             <html>
-                <body style="
-                    font-family: Arial, sans-serif;
-                    line-height: 1.6;
-                    color: #222;
-                ">
+                <body style="font-family: Arial;">
 
                     <h2>
-                        🚨 EuroMillions Jackpot Alert
+                        🚨 EuroMillions Alert
                     </h2>
 
                     <p>
-                        The estimated jackpot has
-                        exceeded your configured
-                        threshold.
-                    </p>
-
-                    <p>
-                        Current estimated jackpot:
+                        Threshold exceeded.
                     </p>
 
                     <p style="
                         font-size: 32px;
                         font-weight: bold;
                         text-decoration: underline;
-                        color: #0b5394;
                     ">
                         {formatted_amount}
-                    </p>
-
-                    <p>
-                        <strong>Game:</strong>
-                        {jackpot.game}
                     </p>
 
                     <p>
@@ -104,44 +84,27 @@ class EmailNotifier:
             )
 
             plain_text = (
-                "Fallback mode activated\n\n"
-                "Primary provider failed.\n"
-                "Using backup estimation.\n\n"
+                f"Fallback mode active.\n"
                 f"Estimated jackpot: "
                 f"{formatted_amount}"
             )
 
             html = f"""
             <html>
-                <body style="
-                    font-family: Arial, sans-serif;
-                    line-height: 1.6;
-                    color: #222;
-                ">
+                <body style="font-family: Arial;">
 
                     <h2>
                         ⚠️ Fallback Mode Activated
                     </h2>
 
                     <p>
-                        The primary jackpot provider
-                        failed.
-                    </p>
-
-                    <p>
-                        A backup estimation model
-                        is currently being used.
-                    </p>
-
-                    <p>
-                        Current estimated jackpot:
+                        Primary provider failed.
                     </p>
 
                     <p style="
                         font-size: 32px;
                         font-weight: bold;
                         text-decoration: underline;
-                        color: #b45f06;
                     ">
                         {formatted_amount}
                     </p>
@@ -151,9 +114,49 @@ class EmailNotifier:
                         {jackpot.source}
                     </p>
 
+                </body>
+            </html>
+            """
+
+        elif alert_type == "heartbeat":
+
+            subject = (
+                "💓 Jackpot Watcher Heartbeat"
+            )
+
+            plain_text = (
+                f"System operational.\n\n"
+                f"Next jackpot estimate: "
+                f"{formatted_amount}"
+            )
+
+            html = f"""
+            <html>
+                <body style="font-family: Arial;">
+
+                    <h2>
+                        💓 Jackpot Watcher Heartbeat
+                    </h2>
+
                     <p>
-                        Estimated rollover increase:
-                        +€15,000,000
+                        System operational.
+                    </p>
+
+                    <p>
+                        Next jackpot estimate:
+                    </p>
+
+                    <p style="
+                        font-size: 32px;
+                        font-weight: bold;
+                        text-decoration: underline;
+                    ">
+                        {formatted_amount}
+                    </p>
+
+                    <p>
+                        <strong>Provider:</strong>
+                        {jackpot.source}
                     </p>
 
                 </body>
@@ -175,10 +178,7 @@ class EmailNotifier:
             <html>
                 <body>
                     <p>
-                        Jackpot amount:
-                        <strong>
-                            {formatted_amount}
-                        </strong>
+                        {formatted_amount}
                     </p>
                 </body>
             </html>

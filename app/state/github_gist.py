@@ -96,6 +96,11 @@ class GitHubGistStateManager:
                     "last_fallback_alert"
                 )
             ),
+            "last_heartbeat_alert": (
+                state.get(
+                    "last_heartbeat_alert"
+                )
+            ),
             "last_seen_jackpot": (
                 jackpot_amount
             ),
@@ -117,6 +122,12 @@ class GitHubGistStateManager:
 
             updated_state[
                 "last_fallback_alert"
+            ] = current_timestamp
+
+        elif alert_type == "heartbeat":
+
+            updated_state[
+                "last_heartbeat_alert"
             ] = current_timestamp
 
         payload = {
@@ -164,6 +175,11 @@ class GitHubGistStateManager:
                     "last_fallback_alert"
                 )
             ),
+            "last_heartbeat_alert": (
+                state.get(
+                    "last_heartbeat_alert"
+                )
+            ),
             "last_seen_jackpot": (
                 jackpot_amount
             ),
@@ -200,6 +216,7 @@ class GitHubGistStateManager:
         return {
             "last_threshold_alert": None,
             "last_fallback_alert": None,
+            "last_heartbeat_alert": None,
             "last_seen_jackpot": None,
             "last_seen_source": None,
             "last_check_at": None
