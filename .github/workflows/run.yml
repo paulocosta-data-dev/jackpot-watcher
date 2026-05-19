@@ -1,0 +1,33 @@
+name: Jackpot Watcher
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  run-jackpot-watcher:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build -t jackpot-watcher .
+
+      - name: Run jackpot watcher
+        run: |
+          docker run \
+            -e GIST_ID="${{ secrets.GIST_ID }}" \
+            -e GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}" \
+            -e JACKPOT_THRESHOLD="${{ secrets.JACKPOT_THRESHOLD }}" \
+            -e SMTP_HOST="${{ secrets.SMTP_HOST }}" \
+            -e SMTP_PORT="${{ secrets.SMTP_PORT }}" \
+            -e SMTP_USERNAME="${{ secrets.SMTP_USERNAME }}" \
+            -e SMTP_PASSWORD="${{ secrets.SMTP_PASSWORD }}" \
+            -e EMAIL_FROM="${{ secrets.EMAIL_FROM }}" \
+            -e EMAIL_TO="${{ secrets.EMAIL_TO }}" \
+            jackpot-watcher
