@@ -395,7 +395,7 @@ JACKPOT_THRESHOLD=
 
 # Operational Flows
 
-## Tuesday / Friday
+## Monday / Thursday
 
 ```text
 Monitor EuroMillions jackpot
@@ -405,7 +405,7 @@ Monitor EuroMillions jackpot
 
 ---
 
-## Monday
+## Sunday
 
 ```text
 Send heartbeat email

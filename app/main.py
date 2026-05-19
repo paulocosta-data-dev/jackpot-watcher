@@ -44,7 +44,7 @@ def main():
     )
 
     is_heartbeat_day = (
-        current_weekday not in [1, 4]
+        current_weekday == 6
     )
 
     logger.info(
